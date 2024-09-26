@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
 import Prettier from 'prettier';
+import path from 'node:path';
 
 const CONTEXT = 10;
 
 async function main() {
-	const path = process.argv[process.argv.length - 1];
-	if (!path) return usage();
+	const input = process.argv[process.argv.length - 1];
+	if (!input) return usage();
 
-	const match = path.match(/(^https?:\/\/.*?):(\d+):(\d+)$/);
+	const match = input.match(/(^https?:\/\/.*?):(\d+):(\d+)$/);
 	if (!match) return usage();
 
 	const url = match[1];
@@ -20,7 +21,7 @@ async function main() {
 
 	const { formatted, cursorOffset } = await Prettier.formatWithCursor(file, {
 		cursorOffset: startingCursor,
-		filepath: url,
+		filepath: path.basename(new URL(url).pathname),
 	});
 	print(formatted, cursorOffset);
 }
