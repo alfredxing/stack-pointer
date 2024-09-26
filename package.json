@@ -3,7 +3,11 @@
 	"version": "0.0.1",
 	"scripts": {
 		"build": "tsc",
-		"watch": "tsc -w"
+		"watch": "tsc -w",
+		"install": "tsc"
+	},
+	"bin": {
+		"ptr": "dist/ptr.js"
 	},
 	"devDependencies": {
 		"@tsconfig/node18": "^18.2.4",

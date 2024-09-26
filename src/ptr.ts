@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import Prettier from 'prettier';
 
 const CONTEXT = 10;
