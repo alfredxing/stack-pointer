@@ -3,7 +3,9 @@
 import Prettier from 'prettier';
 import path from 'node:path';
 
-const CONTEXT = 10;
+const DEFAULTS = {
+	context: 10,
+};
 
 async function main() {
 	const input = process.argv[process.argv.length - 1];
@@ -11,6 +13,8 @@ async function main() {
 
 	const match = input.match(/(^https?:\/\/.*?):(\d+):(\d+)$/);
 	if (!match) return usage();
+
+	const { context } = parseArgs();
 
 	const url = match[1];
 	const row = parseInt(match[2], 10);
@@ -23,7 +27,7 @@ async function main() {
 		cursorOffset: startingCursor,
 		filepath: path.basename(new URL(url).pathname),
 	});
-	print(formatted, cursorOffset);
+	print(formatted, cursorOffset, context);
 }
 
 function findCursor(file: string, row: number, col: number) {
@@ -47,8 +51,9 @@ function findCursor(file: string, row: number, col: number) {
 	return position;
 }
 
-function print(buffer: string, cursor: number) {
+function print(buffer: string, cursor: number, context: number) {
 	const lines = buffer.split('\n');
+	const output = [];
 	let offset = 0;
 
 	for (let i = 0; i < lines.length; i++) {
@@ -57,18 +62,23 @@ function print(buffer: string, cursor: number) {
 		if (offset + line.length + 1 >= cursor) {
 			const col = cursor - offset;
 
-			// Print context before
-			for (let ci = i - CONTEXT; ci <= i; ci++) {
-				process.stdout.write(lines[ci] + '\n');
+			// Context before
+			for (let ci = Math.max(0, i - context); ci <= i; ci++) {
+				output.push(lines[ci]);
 			}
 
-			// Print pointer
-			process.stdout.write(new Array(col).fill('-').join('') + '^' + '\n');
+			// Pointer line
+			output.push(new Array(col).fill('-').join('') + '^');
 
-			// Print context after
-			for (let ci = 0; ci < CONTEXT; ci++) {
-				process.stdout.write(lines[i + ci + 1] + '\n');
+			// Context after
+			for (let ci = 0; ci < Math.min(lines.length, context); ci++) {
+				output.push(lines[i + ci + 1]);
 			}
+
+			process.stdout.write(
+				output.filter((line) => line !== undefined).join('\n')
+			);
+			process.stdout.write('\n');
 
 			break;
 		}
@@ -78,8 +88,31 @@ function print(buffer: string, cursor: number) {
 	}
 }
 
-function usage() {
-	process.stderr.end(`Usage: ptr script-url:row:col` + '\n');
+function parseArgs(): { context: number } {
+	try {
+		const args = process.argv.slice(2, process.argv.length - 1).join(' ');
+
+		const context = parseInt(
+			args.match(/(?:^| )(?:-c\s*|--?context(?:=|\s+))(\d+)(?: |$)/)?.[1] ?? '',
+			10
+		);
+
+		return { context: !context || isNaN(context) ? DEFAULTS.context : context };
+	} catch (e) {
+		return usage();
+	}
+}
+
+function usage(): never {
+	process.stderr.end(
+		[
+			`usage: ptr [<options>] script-url:row:col`,
+			``,
+			`    -c N, --context=N        Number of lines of context to show before and after the pointer`,
+			``,
+			``,
+		].join('\n')
+	);
 	process.exit(2);
 }
 
