@@ -53,7 +53,7 @@ function findCursor(file: string, row: number, col: number) {
 
 function print(buffer: string, cursor: number, context: number) {
 	const lines = buffer.split('\n');
-	const output = [];
+	const output: string[] = [];
 	let offset = 0;
 
 	for (let i = 0; i < lines.length; i++) {
@@ -88,6 +88,7 @@ function print(buffer: string, cursor: number, context: number) {
 	}
 }
 
+// TODO: do this better
 function parseArgs(): { context: number } {
 	try {
 		const args = process.argv.slice(2, process.argv.length - 1).join(' ');
@@ -106,10 +107,9 @@ function parseArgs(): { context: number } {
 function usage(): never {
 	process.stderr.end(
 		[
-			`usage: ptr [<options>] script-url:row:col`,
-			``,
+			`Usage: stack-pointer [<options>] script-url:row:col`,
+			`Options:`,
 			`    -c N, --context=N        Number of lines of context to show before and after the pointer`,
-			``,
 			``,
 		].join('\n')
 	);

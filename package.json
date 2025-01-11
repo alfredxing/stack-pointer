@@ -1,13 +1,14 @@
 {
-	"name": "ptr",
+	"name": "stack-pointer",
 	"version": "0.0.1",
+	"repository": "https://github.com/alfredxing/stack-pointer",
 	"scripts": {
 		"build": "tsc",
 		"watch": "tsc -w",
 		"prepare": "npm run build"
 	},
 	"bin": {
-		"ptr": "dist/ptr.js"
+		"stack-pointer": "dist/stack-pointer.js"
 	},
 	"dependencies": {
 		"prettier": "^3.3.3"
